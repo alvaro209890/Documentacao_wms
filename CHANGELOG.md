@@ -2,6 +2,17 @@
 
 Registro de operações e mudanças no serviço WMS.
 
+## 2026-08-02 — Auditoria do sync mensal SIMCAR/Fiscalização (read-only, OK)
+
+**Veredito: o sync automático está funcionando.** Nenhuma alteração feita — apenas verificação.
+
+- **Timer:** `car-digital-sync.timer` (user) ativo/enabled, dia 01 às 02:00, retries diários até sucesso.
+- **Última execução:** 01/08 02:00→03:32, `status: sucesso` (~1h32), snapshot `20260801T050001Z`, 38 camadas (30 SIMCAR + 8 Fiscalização).
+- **Retry diário de 02/08 pulou corretamente** (`skip_reason: mes 2026-08 ja validado`).
+- **Validação feita pelo próprio sync:** GetCapabilities local+público + GetMap + GetFeatureInfo (PNG/JSON reais, não XML de erro) — todos `ok`.
+- **Dados:** `/media/server/HD Backup/VETOR/CAR_Digital/current/datasets/simcar_digital/<camada>/<camada>.zip` (30 zips, atualizados 01/08) + `Fiscalizacao/`. Upload Google Drive `SIMCAR_DIGITAL_V08.2026`. Arquivo mensal em `CAR_Digital/archive/YYYY-MM/`.
+- **Ponto de atenção:** zips de agosto com **mesmo tamanho** dos de julho (ex.: `veredas` 111.578.555 B, `app` 1.790.946.475 B). Provável: dado-fonte do CAR Digital não mudou no mês. O script não compara por hash — para confirmar dado novo, comparar checksum de um zip entre os 2 meses.
+
 ## 2026-08-01 — GeoWebCache ativado p/ todo o raster + garantias de integridade
 
 **Estado:** o GWC já estava habilitado globalmente (`cacheLayersByDefault=true`, 1470 camadas). O que foi feito:

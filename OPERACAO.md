@@ -36,6 +36,7 @@ curl -s -u admin:***** "http://127.0.0.1:8081/geoserver/rest/workspaces/cbers/la
 | Capabilities lento (4–6s) | Latência alta em todos os testes | Normal: healthcheck a cada 2min + XML gigante (737 camadas). Monitorar, não corrigir às cegas |
 | Camada CBERS 2026 não renderiza | GetMap → XML `ServiceException` ou PNG vazio | Provável symlink quebrado em `data_dir/external/cbers/` apontando para `/media/server/HD Backup1/...` — corrigir store para apontar direto ao HD (`RASTER/CBERS_4A/...`) |
 | Vetores SIMCAR desatualizados | Shapes antigos | Rodar `systemctl --user start car-digital-sync.service` (ou esperar o timer do dia 01) |
+| Sync SIMCAR não confirma dado novo | Zips de um mês com mesmo tamanho do anterior (ex.: `veredas` 111.578.555 B em jul/ago/2026) | Provável: dado-fonte do CAR Digital não mudou. O script não compara por hash — comparar checksum de um zip entre os 2 meses se precisar confirmar. Sync em si está OK (auditoria 2026-08-02) |
 | GeoServer fora do ar | Healthcheck reinicia em cascata | Ver `journalctl --user -u geoserver-wms.service -n 100` |
 | Proxy devolvendo 403 | Request fora de `/wms`, `/wfs`, `/ows`, `/wmts`, `/schemas` | Policy intencional do proxy público |
 
