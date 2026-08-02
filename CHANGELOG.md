@@ -100,3 +100,16 @@ Acessos repetidos: 0.1–0.5s (cache OS + Cloudflare). Cenas individuais: ~0.16s
 - GetMap raster CBERS (HD) — PNG ok
 
 **Resultado:** SSD `/` de 89% → 77% (12G → 24G livres). Estrutura no HD: `/media/server/HD Backup/GEOSERVER/data/cbers/`.
+
+## 2026-08-02 — Removida entrada saldopro-api do túnel geoserver-wms + desativação de serviços
+
+**Operação (autor: Hermes-server):** limpeza de serviços/túneis inativos no server.
+
+1. **Túnel geoserver-wms (config.yml):** removida a entrada `saldopro-api.cursar.space → 127.0.0.1:10000` (sem listener — config morta). Reiniciado `geoserver-wms-tunnel.service`. Validação: saldopro-api agora retorna 530 (hostname não roteado); wms/geoforest-api/ecogestor-api/9router seguem respondendo.
+2. **Painel de Limites:** `painel-limites-cloudflared.service` parado + desabilitado (origem 8787/4173 estava fora do ar).
+3. **VendaFácil PDV:** `vendafacil-backend`, `vendafacil-frontend`, `vendafacil-cloudflared` parados + desabilitados.
+4. **Agro Oliveira:** `agro-oliveira-backend`, `agro-oliveira-cloudflared` parados + desabilitados.
+5. **Túneis órfãos:** configs `auracore-config.yml` (api.cursar.space→8000) e `whatsapp-admin.yml` (→3190) movidos para `~/.cloudflared/disabled-backup-20260802/`. Units auracore já estavam disabled.
+6. **SaldoPro:** já estava desativado (inactive/disabled) — só a entrada do túnel foi removida.
+
+**Como reativar:** `systemctl --user enable --now <serviço>` + restaurar yml do backup se necessário.
