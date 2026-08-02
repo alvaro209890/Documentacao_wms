@@ -2,6 +2,38 @@
 
 Registro de operações e mudanças no serviço WMS.
 
+## 2026-08-01 — GeoWebCache ativado p/ todo o raster + garantias de integridade
+
+**Estado:** o GWC já estava habilitado globalmente (`cacheLayersByDefault=true`, 1470 camadas). O que foi feito:
+
+1. **Cache em disco movido do SSD para o HD** — `geoserver_data/gwc` → `/media/server/HD Backup/GEOSERVER/gwc-cache` (symlink). Nada de tiles no SSD.
+2. **Expiração de 30 dias (2592000s) nos 38 vetores** (SIMCAR Digital + Fiscalização) via REST — o sync mensal atualiza os shapes e o cache não pode ficar eterno. Limitação: grupos (`SIMCAR_DIGITAL`, `FISCALIZACAO`, `VETOR`, `GRADES_DE_SATELITE`) não persistem `expireCache` via REST (ficam em 0/nunca — risco baixo, ninguém cacheia o grupo inteiro).
+3. **Endpoints de cache confirmados no público:**
+   - `https://wms.cursar.space/geoserver/gwc/service/wms` (WMS-C) — ✅
+   - `https://wms.cursar.space/geoserver/gwc/service/wmts` (WMTS) — ✅
+   - TMS (`/gwc/tms/`) — **bloqueado pelo proxy** (sufixo fora da whitelist)
+   - `TILED=true` no `/cbers/wms` — responde mas **não grava no cache** (só WMS-C/WMTS cacheiam de fato)
+
+**Tempos medidos (2ª chamada = HIT):**
+
+| Tipo | 1ª (MISS) | 2ª (HIT) |
+|---|---|---|
+| Cena CBERS (tile z7) | ~0.2-0.4s | **0.006-0.01s** |
+| Cena Landsat | 0.3s | **0.006s** |
+| Mosaico SPOT (município) | 4.6s | **0.04s** |
+
+**Garantias de integridade (cor/deslocamento):**
+
+- **Cache = render exato:** tiles repetidos retornam bytes idênticos (md5 igual); vs render direto a diferença média é de **1 nível RGB (0.4%)** em pixels de contraste — arredondamento do metatile (render 1024px→256px), imperceptível, sem deslocamento.
+- **Alinhamento com grade oficial (centro cena vs tile da grade):** SPOT Canarana **4m** ✓ · Landsat 224/069 **~0.7km** (cena 185km) ✓ · CBERS 213/129 ~3km (folga normal de cena WPM 165km vs tile nominal 115km — cena contida na grade).
+- **Cores:** CBERS/SPOT usam o SLD `raster` (só Opacity 1.0 — **nenhuma transformação de cor**). Landsat usa `landsat_rgb` com `Normalize` (stretch de contraste por canal — estilo histórico de visualização, não é alteração de dados).
+- O cache não altera nada disso — serve o PNG que o GeoServer renderizou.
+
+**Ressalvas:**
+- Grupo `RASTER` inteiro é pesado para tile único (timeout em z6 — renderiza todas as órbitas sobrepostas). Usar subgrupos (`orbit_*`, `CBERS-4A-Apos_2019`, `LANDSAT`, `SPOT_SEMA`, mosaicos).
+- Primeiro acesso de um tile gera (MISS); navegação posterior é instantânea (HIT).
+- GeoForest continua consumindo o WMS normal (`/cbers/wms`) — não afetado; para ganhar cache basta apontar para o WMS-C/WMTS.
+
 ## 2026-08-01 — Reativação completa do SPOT SEMA (mosaicos + cenas)
 
 **Contexto:** as 536 camadas SPOT estavam publicadas e `enabled`, mas os **7 mosaicos por município** (`spot_sema_<muni>_mosaic`) travavam (timeout 60s+) e 296 stores de cena apontavam para a pasta original sem overviews.
