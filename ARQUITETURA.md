@@ -28,14 +28,16 @@
         │  data dir: geoserver_data/   │
         └──────┬──────────────┬────────┘
                │              │
-      ┌────────▼──────┐  ┌────▼──────────────┐
-      │ HD 2TB        │  │ SSD               │
-      │ RASTER/       │  │ data/cbers/       │
-      │ (520GB rasters│  │ (vetores SIMCAR + │
-      │  CBERS/Landsat│  │  Fiscalização)    │
-      │  /SPOT)       │  └───────────────────┘
-      └───────────────┘
+      ┌────────▼──────┐  ┌───▼───────────────┐
+      │ HD 2TB        │  │ HD 2TB            │
+      │ RASTER/       │  │ GEOSERVER/data/   │
+      │ (520GB rasters│  │ cbers (vetores    │
+      │  CBERS/Landsat│  │ SIMCAR+Fiscaliza- │
+      │  /SPOT)       │  │ ção, via symlink  │
+      └───────────────┘  └───────────────────┘
 ```
+
+> **Nota (2026-08-01):** os vetores (SIMCAR + Fiscalização, ~13GB) foram migrados do SSD para o HD (`GEOSERVER/data/cbers/`) via symlink — `geoserver_data/data/cbers` → `/media/server/HD Backup/GEOSERVER/data/cbers`. Config continua no SSD (poucos MB).
 
 ## Serviços (systemd user)
 

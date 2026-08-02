@@ -24,7 +24,7 @@ Documentação do serviço **GeoServer WMS** rodando no PC `server-desktop` do �
 - **Tunnel Cloudflare** — `https://wms.cursar.space` → 8082
 - **737 camadas** no workspace `cbers`: CBERS-4A WPM, Landsat, SPOT SEMA, SIMCAR Digital e Fiscalização
 - **Raster (729 camadas)** leem direto do HD de 2TB (`/media/server/HD Backup/RASTER`, 520GB)
-- **Vetores (38 camadas SIMCAR/Fiscalização)** leem do SSD (`geoserver_data/data/cbers`, ~13GB, atualizados mensalmente pelo sync)
+- **Vetores (38 camadas SIMCAR/Fiscalização)** também no HD de 2TB (`/media/server/HD Backup/GEOSERVER/data/cbers`, via symlink — migrados do SSD em 2026-08-01)
 - **Principal integração:** GeoForest-IA publica camadas CBERS/Landsat via REST local e consome o WMS público para análise de imagens
 
-*Documentado em 2026-08-01.*
+*Documentado em 2026-08-01. Operações registradas em [CHANGELOG.md](CHANGELOG.md).*

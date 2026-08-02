@@ -34,7 +34,7 @@ Testa as 3 URLs em cascata com `curl --max-time 20`:
 
 - Executado por `car-digital-sync.service` (oneshot), working dir `/media/server/HD Backup/VETOR/CAR_Digital`
 - Agenda: `*-*-01 02:00:00` + retry diário `*-*-02..31 02:00:00` com `Persistent=true` (se o dia 01 falhar, tenta de novo nos dias seguintes)
-- Atualiza os 38 datastores vetoriais (SIMCAR Digital + Fiscalização) em `/home/server/geoserver_data/data/cbers/`
+- Atualiza os 38 datastores vetoriais (SIMCAR Digital + Fiscalização) em `geoserver_data/data/cbers/` — desde 2026-08-01 esse path é **symlink** para `/media/server/HD Backup/GEOSERVER/data/cbers/` (HD); o sync continua gravando pelo mesmo path lógico, sem mudanças no script
 - Depende de: `network-online.target` + `geoserver-wms.service`
 
 ## Comandos úteis

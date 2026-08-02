@@ -5,9 +5,11 @@
 | Tipo | Onde | Tamanho | Camadas |
 |---|---|---|---|
 | Raster CBERS/Landsat/SPOT | `/media/server/HD Backup/RASTER/` (HD 2TB) | 520GB | 729 (stores `file:/media/server/HD%20Backup/RASTER/...`) |
-| Vetores SIMCAR Digital + Fiscalização | `/home/server/geoserver_data/data/cbers/<camada>/` (SSD) | ~13GB | 38 (datastores `file:/home/server/geoserver_data/data/cbers/...`) |
+| Vetores SIMCAR Digital + Fiscalização | `/media/server/HD Backup/GEOSERVER/data/cbers/` (HD 2TB, via symlink) | ~13GB | 38 (datastores apontam para `geoserver_data/data/cbers/`, resolvido por symlink) |
 | Config do GeoServer | `/home/server/geoserver_data/` | — | — |
 | Stores CBERS 2026 (via symlink) | `/home/server/.local/geoserver-work/data_dir/external/cbers/` | 2.1MB (links) | 8 |
+
+> **Migração 2026-08-01:** os vetores (~13GB) foram movidos do SSD para o HD (`/media/server/HD Backup/GEOSERVER/data/cbers/`) com symlink em `geoserver_data/data/cbers`. Nenhum datastore foi alterado; o sync mensal segue funcionando pelo mesmo path. Ver [CHANGELOG.md](CHANGELOG.md).
 
 ### Estrutura de pastas do data dir
 
