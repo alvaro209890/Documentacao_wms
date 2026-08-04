@@ -51,6 +51,9 @@ passada e passou na segunda com folga (é cena pan-sharpened grande, render lent
 `<defaultStyle><id>` anterior em cada `layer.xml` — os ids antigos estão gravados no plano
 (`estilo_anterior_id`) e há backup completo do catálogo em
 `/home/server/geoserver_backups/catalogo_antes_stretch_20260804_103325.tar.gz`.
+O plano com os ids anteriores e as faixas usadas ficou em
+`/home/server/geoserver_backups/plano_stretch_20260804.json` (e o censo de tipos de dado em
+`censo_raster_20260804.json`) — e o arquivo que `--reverter` consome.
 
 **Correção de registro:** a entrada de 2026-08-01 afirma que "CBERS/SPOT usam o SLD `raster` (só
 Opacity 1.0 — nenhuma transformação de cor)". Isso vale para o **SPOT** (Byte), mas **não** para os
