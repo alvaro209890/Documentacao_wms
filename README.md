@@ -16,6 +16,7 @@ Documentação do serviço **GeoServer WMS** rodando no PC `server-desktop` do �
 | [SERVICOS.md](SERVICOS.md) | Systemd, timers, healthcheck e sync automático |
 | [OPERACAO.md](OPERACAO.md) | Comandos de diagnóstico, testes e troubleshooting |
 | [SEGURANCA.md](SEGURANCA.md) | Proxy público, exposição de camadas e decisões |
+| [scripts/](scripts/) | Ferramentas de manutenção (realce de cor fixo, verificação) |
 
 ## Resumo executivo
 
@@ -24,6 +25,7 @@ Documentação do serviço **GeoServer WMS** rodando no PC `server-desktop` do �
 - **Tunnel Cloudflare** — `https://wms.cursar.space` → 8082
 - **737 camadas** no workspace `cbers`: CBERS-4A WPM, Landsat, SPOT SEMA, SIMCAR Digital e Fiscalização
 - **Raster (729 camadas)** leem direto do HD de 2TB (`/media/server/HD Backup/RASTER`, 520GB)
+- **Cor:** nenhuma camada altera a cor em função do recorte pedido — 178 rasters não-Byte têm estilo com realce fixo (2026-08-04), o restante já é 8 bits
 - **Vetores (38 camadas SIMCAR/Fiscalização)** também no HD de 2TB (`/media/server/HD Backup/GEOSERVER/data/cbers`, via symlink — migrados do SSD em 2026-08-01)
 - **Principal integração:** GeoForest-IA publica camadas CBERS/Landsat via REST local e consome o WMS público para análise de imagens
 

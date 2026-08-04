@@ -2,6 +2,83 @@
 
 Registro de operações e mudanças no serviço WMS.
 
+## 2026-08-04 — Realce de cor fixo em todo o raster não-Byte (178 camadas) *(autor: Claude)*
+
+**Problema:** a mesma área do chão voltava com cor diferente dependendo do BBOX pedido. Aparecia
+como mapa do ArcMap em que o quadro principal e os minimapas (cada um é uma requisição com
+extensão própria) não batiam — um roxo claro, outro roxo escuro.
+
+**Causa raiz:** os rasters do acervo não são 8 bits (Int16, UInt16, UInt32, Float32). Para gerar o
+PNG, o GeoServer precisa converter para 8 bits, e o realce era **automático por requisição**:
+`landsat_rgb.sld` usava `<ContrastEnhancement><Normalize/></ContrastEnhancement>` sem faixa fixa, e
+o estilo `raster` (sem realce declarado) cai no mesmo caminho de conversão. Resultado: o mapeamento
+valor→cor era calculado com a estatística dos pixels daquele recorte.
+
+**Medição antes (20 camadas amostradas, diferença máxima em níveis RGB entre a mesma área pedida
+solta e pedida dentro da cena inteira):**
+
+| dtype | camadas medidas | diferença |
+|---|---|---|
+| Byte | 4 | 0,0–0,2 (só ruído de reamostragem) |
+| Int16 / UInt16 / UInt32 / Float32 | 16 | 8,9 a **102,3** |
+
+**O que foi feito:**
+
+1. **Censo dos 737 rasters** por tipo de dado: 558 já são Byte (528 WorldImage SPOT + 23 GeoTIFF +
+   7 ImageMosaic) e **179 não são** (111 Int16, 41 UInt16, 22 UInt32, 4 Float32, 1 Int16 de 5 bandas).
+2. **Um estilo por camada** (`<camada>_fixo`) para as não-Byte, com
+   `StretchToMinimumMaximum` nos percentis 2/98 **de cada cena**, por banda — calculados uma vez a
+   partir de um nível de overview, descartando nodata, valores não-finitos e a borda preta
+   (pixel zero em todas as bandas). Tem que ser por camada: cada cena tem faixa própria e o acervo
+   mistura Int16 com UInt32.
+3. **178 camadas migradas.** 1 ficou de fora
+   (`213_129_2025_cbers_4a_wpm_20250813_213_129_l4_c342_pan` — arquivo ilegível no HD; segue no
+   estilo antigo).
+4. **As 558 Byte não foram tocadas** — 8 bits sai como está gravado, sem conversão, então a cor
+   delas já era estável (medido: 0,0–0,2).
+5. Cache do GeoWebCache (`cbers_*`, ~1MB) limpo, senão continuaria servindo tile com a cor velha.
+6. `systemctl --user restart geoserver-wms.service` para recarregar o catálogo.
+
+**Medição depois:** 20/20 camadas amostradas com diferença ≤ 1,2 nível (era até 102,3). Na cena
+`landsat_224_069_2004_l5_tm_224069_20040623_c543`, quadro principal × minimapa saiu de
+2,5/48,7/31,2 para 1,9/1,9/1,9 — os três canais deslocam igual, ou seja, sem desvio de matiz.
+
+**Varredura de saúde:** GetMap em cada uma das 178 alteradas — **178/178 respondem PNG**. Uma
+(`214_128_2023_cbers4a_wpm_20231228_214_128_c342_pan2`) estourou o timeout de 180s na primeira
+passada e passou na segunda com folga (é cena pan-sharpened grande, render lento no 1º acesso).
+
+**Reversão:** `landsat_rgb` e `raster` continuam existindo, intocados. Voltar é devolver o
+`<defaultStyle><id>` anterior em cada `layer.xml` — os ids antigos estão gravados no plano
+(`estilo_anterior_id`) e há backup completo do catálogo em
+`/home/server/geoserver_backups/catalogo_antes_stretch_20260804_103325.tar.gz`.
+
+**Correção de registro:** a entrada de 2026-08-01 afirma que "CBERS/SPOT usam o SLD `raster` (só
+Opacity 1.0 — nenhuma transformação de cor)". Isso vale para o **SPOT** (Byte), mas **não** para os
+CBERS Int16: medidos antes desta mudança, variavam 16–30 níveis conforme o recorte. Sem realce
+declarado no SLD o GeoServer ainda assim normaliza dado não-Byte.
+
+**Ressalvas:**
+
+- **Camada nova publicada daqui pra frente nasce com o estilo padrão** e volta a ter o problema.
+  Depois de publicar, rodar `scripts/gerar_estilos_fixos.py` (censo → plano → `--aplicar`) e
+  reiniciar o serviço.
+- Mapas já exportados não mudam, mas reexportar um projeto antigo agora dá cor diferente do PDF
+  anterior. É o efeito desejado.
+- **Float32 com NaN quebra a camada** se o percentil vier `nan`: o SLD sai com
+  `<VendorOption name="minValue">nan</VendorOption>` e o GetMap responde
+  `Error rendering coverage on the fast path`. As 4 camadas Float32 caíram nisso e foram
+  corrigidas na mesma sessão (máscara `np.isfinite`). O script já traz o guarda.
+- **`SLD_BODY` exige `<NamedLayer><Name>` qualificado com o workspace** (`cbers:<camada>`). Com o
+  nome sem prefixo o GeoServer aceita o XML, não acusa erro e **ignora o estilo em silêncio** —
+  gastei vários testes achando que `StretchToMinimumMaximum` não funcionava nesta instância.
+- **Existe um container Docker `geoserver-wms` ocioso** (sem porta publicada, data dir num volume
+  próprio com o catálogo de exemplo). Quem está no ar é o **Jetty nativo** da user unit
+  `geoserver-wms.service`, com data dir `/home/server/geoserver_data`. Reiniciar o container não
+  tem efeito nenhum no serviço público.
+
+**Scripts:** `scripts/gerar_estilos_fixos.py` (censo, plano, aplicar, reverter) e
+`scripts/verificar_cor.py` (mede se a cor depende do BBOX).
+
 ## 2026-08-02 — Auditoria do sync mensal SIMCAR/Fiscalização (read-only, OK)
 
 **Veredito: o sync automático está funcionando.** Nenhuma alteração feita — apenas verificação.

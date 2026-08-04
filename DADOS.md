@@ -17,7 +17,7 @@
 /home/server/geoserver_data/
 ├── data/cbers/            ← vetores ATIVOS (SIMCAR + Fiscalização) — NÃO apagar
 ├── workspaces/cbers/      ← 737 definições de camadas + 306 layergroups
-├── styles/                ← SLD (default_raster, landsat_rgb, ...)
+├── styles/                ← SLD (default_raster, landsat_rgb, <camada>_fixo × 178, ...)
 ├── gwc/ + gwc-layers/     ← cache/config GeoWebCache (uso mínimo)
 ├── logs/                  ← geoserver.log (rotaciona em ~20MB)
 └── security/, wms.xml, wfs.xml, ...
@@ -58,6 +58,29 @@ VETOR
 ```
 
 Outros: `SPOT`, `SPOT_SEMA`, `GRADES_DE_SATELITE`, `CBERS-4A-Apos_2019`.
+
+## Cor e realce (verificado 2026-08-04)
+
+**Regra em vigor: nenhuma camada tem a cor alterada em função do recorte pedido.**
+
+O GeoServer converte raster não-Byte para 8 bits antes de gerar o PNG. Se o realce for automático,
+essa conversão usa a estatística **da janela pedida** — a mesma área do chão volta com cor
+diferente conforme o BBOX. Isso valia para todo raster Int16/UInt16/UInt32/Float32, tanto no estilo
+`landsat_rgb` (com `<Normalize/>`) quanto no `raster` (sem realce declarado).
+
+| Situação | Camadas | Estilo | Cor depende do BBOX? |
+|---|---|---|---|
+| Dado já Byte (SPOT WorldImage, mosaicos, alguns CBERS) | 558 | `raster` | não — passa direto, sem conversão |
+| Dado não-Byte com estilo fixo | 178 | `<camada>_fixo` | não — `StretchToMinimumMaximum` p2/p98 da cena |
+| Dado não-Byte sem estatística legível | 1 | `raster` | sim — `..._213_129_l4_c342_pan`, arquivo ilegível no HD |
+
+Os percentis são por banda e por cena, calculados de um overview descartando nodata, valores
+não-finitos e a borda preta. Faixa típica: Landsat 5 UInt16 ~11.500–21.000; CBERS-4A Int16
+~90–430; Landsat Float32 ~0,04–0,31.
+
+**Camada nova nasce com o estilo padrão** e volta a ter o problema — depois de publicar, rodar
+`scripts/gerar_estilos_fixos.py` e reiniciar o serviço. Ver [CHANGELOG.md](CHANGELOG.md) e
+[OPERACAO.md](OPERACAO.md).
 
 ## Pontos de atenção
 
