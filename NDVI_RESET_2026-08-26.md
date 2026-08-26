@@ -24,8 +24,10 @@ GeoForest-IA no commit `ddbfdb2c`.
 4. Apagados os GeoTIFFs, índices e temporários NDVI do GeoForest.
 5. Zerado o histórico específico da aba NDVI.
 
-Os estilos permanecem no catálogo/configuração para a próxima publicação. Eles
-não são imagens. Nenhuma camada CBERS, LANDSAT, SPOT ou vetorial foi removida.
+As definições dos estilos continuam versionadas no GeoForest. O `ndvi_ramp`
+permanece no catálogo; `ndfi_ramp` e `savi_ramp` serão criados de forma
+idempotente quando uma nova publicação exigir cada um deles. Estilos não são
+imagens. Nenhuma camada CBERS, LANDSAT, SPOT ou vetorial foi removida.
 
 ## Verificação depois
 
