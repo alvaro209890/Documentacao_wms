@@ -14,6 +14,7 @@ O backend publica imagens no GeoServer via **REST local** (`http://127.0.0.1:808
 |---|---|---|
 | `backend/cbers-archive.ts` | `publishCbersPanToArchive()` → `publishGeoTiff()` | Publica cenas CBERS: cria coveragestore → publica layer → adiciona ao layer group → verifica via WMS GetMap |
 | `backend/landsat.ts` | `publishLandsatGeoTiff()` | Mesmo pipeline para Landsat |
+| `backend/ndvi/` | `runNdviJob()` → `publishNdviGeoTiff()` | Calcula Float32 a partir de Landsat C2 L2, publica Float32 + RGB e cria `RASTER → NDVI → órbita → ano` |
 | `backend/lib/map-utils.ts` | Capabilities + snapshot cache | Usa o WMS **externo** da SEMA (`geo.sema.mt.gov.br/geoserver/ows`), não o local |
 
 Pipeline de publicação:
@@ -24,6 +25,10 @@ Pipeline de publicação:
 4. Publica a layer + adiciona nos layer groups (`orbit_{X}_{Y}_y{AAAA}` → `orbit_{X}_{Y}` → `CBERS-4A-Apos_2019` → `RASTER`)
 5. Verifica com `GetMap` na URL pública `https://wms.cursar.space/geoserver/cbers/wms`
 6. Retry com backoff curto; aguarda o GeoServer subir (útil após restart)
+O NDVI usa `/media/server/HD Backup/RASTER/NDVI/<path_row>/<ano>/`, com estilo
+versionado `ndvi_ramp` no Float32 e `raster` no RGB. A hierarquia e o `GetMap` são
+materializados na primeira execução de um job NDVI real; não são criados no deploy.
+
 
 ## Consumo do WMS público
 
@@ -39,6 +44,8 @@ Variáveis de ambiente do backend relacionadas:
 - `GEOSERVER_PUBLIC_WMS_BASE` — override da URL pública do WMS (default `https://wms.cursar.space/geoserver/cbers/wms`)
 - `GEOSERVER_BASE_URL` — REST local (default `http://127.0.0.1:8081/geoserver`)
 - `GEOSERVER_USER` / `GEOSERVER_PASSWORD` — admin REST (defaults locais)
+- `SIMCAR_NDVI_ENABLED` — libera o quarto card pós-recorte; ativada em produção em 2026-08-25
+- `NDVI_ARCHIVE_ROOT` — acervo NDVI (default `/media/server/HD Backup/RASTER/NDVI`)
 - `SEMA_WMS_BASE_URL` / `SEMA_WMS_AUTHKEY` — WMS da SEMA (externo)
 
 ## Fluxo de dados completo

@@ -2,6 +2,38 @@
 
 Registro de operações e mudanças no serviço WMS.
 
+## 2026-09-02 — WMS lento / espiral de restarts do túnel *(autor: Claude)*
+
+**Sintoma:** WMS "lento", healthcheck em loop de falha desde 13:28 (45 restarts do túnel no dia).
+
+**Causa raiz (dupla):**
+1. **Buffer UDP do kernel minúsculo.** `net.core.rmem_max/wmem_max` = 208 KiB; o QUIC do
+   cloudflared quer 7 MiB (o log reclamava `failed to sufficiently increase receive buffer`).
+   Servir o GetCapabilities do `cbers` (~2,9 MB, 1507 camadas) pelo túnel beirava/passava os
+   `--max-time 20` do healthcheck.
+2. **Healthcheck destrutivo.** Ao falhar o teste público, o script reiniciava o
+   `geoserver-wms-tunnel.service` — que é **multisserviço** (derruba junto geoforest-api,
+   ecogestor-api, modelos). Reconexão QUIC leva ~10-30 s; no tick seguinte (2 min) o público
+   caía no meio do restart → outro restart. Espiral auto-infligida. GeoServer local e proxy
+   respondiam 200 em ~2,2 s o tempo todo — nunca foram o gargalo.
+
+**O que foi feito:**
+- `/etc/sysctl.d/99-quic-udp-buffers.conf`: `rmem_max=wmem_max=7168000` (persistente, aplicado).
+  O aviso de buffer do cloudflared sumiu após restart.
+- Reescrito `~/.local/bin/geoserver-wms-healthcheck.sh`:
+  - Probe público **leve**: `GET /geoserver/web/` (responde ~0,16 s; saudável se HTTP < 500) em
+    vez de baixar os 2,9 MB do GetCapabilities. Local (8081/8082) segue com GetCapabilities real.
+  - `--max-time` local 20→45.
+  - **Cooldown de 300 s** no restart do túnel (`ActiveEnterTimestamp`): não reinicia se subiu há
+    < 5 min → quebra a espiral, mantém auto-recuperação para queda real. Sem restart em cascata.
+  - Backup: `geoserver-wms-healthcheck.sh.bak-20260902-140528`.
+
+**Medição pós-fix:** público estabiliza em ~5-6 s total (era beira de 20 s + loop); healthcheck
+passa limpo (exit 0). GeoServer/proxy locais inalterados (~2,2 s).
+
+**Pendência (não-crítica):** TTFB público ~4,5 s vem da geração do GetCapabilities de 1507 camadas
+(no-store, sem cache no edge). Se incomodar, avaliar cache de GetCapabilities no proxy.
+
 ## 2026-08-04 — Realce de cor fixo em todo o raster não-Byte (178 camadas) *(autor: Claude)*
 
 **Problema:** a mesma área do chão voltava com cor diferente dependendo do BBOX pedido. Aparecia
@@ -193,3 +225,13 @@ Acessos repetidos: 0.1–0.5s (cache OS + Cloudflare). Cenas individuais: ~0.16s
 6. **SaldoPro:** já estava desativado (inactive/disabled) — só a entrada do túnel foi removida.
 
 **Como reativar:** `systemctl --user enable --now <serviço>` + restaurar yml do backup se necessário.
+
+## 2026-08-25 — Pipeline NDVI do GeoForest
+
+- GeoForest `main` em `d926def7`: módulo `backend/ndvi/`, quarto card pós-recorte e documentação do contrato.
+- `SIMCAR_NDVI_ENABLED=true` ativada no `backend.env`; processo reiniciado e variável confirmada no `/proc/<pid>/environ`.
+- Preflight live: GDAL 3.8.4, `gdalwarp`, `gdal_calc.py` e `gdaldem` presentes; HD `/media/server/HD Backup/RASTER` gravável; `ndvi_ramp.sld` presente no checkout.
+- Acervo alvo: `/media/server/HD Backup/RASTER/NDVI`; grupos alvo: `RASTER → NDVI → ndvi_orbit_<path>_<row> → ..._y<ano>`.
+- O deploy não cria camada vazia. Float32, RGB, stores, grupos e o GetMap surgem na primeira execução NDVI sobre um recorte real.
+
+**Pendente de evidência live:** primeira execução autenticada sobre CAR real, seguida de GetCapabilities/GetMap e conferência do laudo Word. Build/API/Hosting estão online.

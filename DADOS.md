@@ -4,7 +4,7 @@
 
 | Tipo | Onde | Tamanho | Camadas |
 |---|---|---|---|
-| Raster CBERS/Landsat/SPOT | `/media/server/HD Backup/RASTER/` (HD 2TB) | 520GB | 729 (stores `file:/media/server/HD%20Backup/RASTER/...`) |
+| Raster CBERS/Landsat/SPOT/NDVI | `/media/server/HD Backup/RASTER/` (HD 2TB) | 520GB + NDVI sob demanda | 729 existentes + 2 por job NDVI |
 | Vetores SIMCAR Digital + Fiscalização | `/media/server/HD Backup/GEOSERVER/data/cbers/` (HD 2TB, via symlink) | ~13GB | 38 (datastores apontam para `geoserver_data/data/cbers/`, resolvido por symlink) |
 | Config do GeoServer | `/home/server/geoserver_data/` | — | — |
 | Stores CBERS 2026 (via symlink) | `/home/server/.local/geoserver-work/data_dir/external/cbers/` | 2.1MB (links) | 8 |
@@ -29,7 +29,8 @@
 /media/server/HD Backup/RASTER/
 ├── CBERS_4A/{orbita}/{ano}/CBERS_4A_WPM_*.TIF
 ├── LANDSAT/{orbita}/{ano}/...
-└── SPOT/SPOT_SEMA/{municipio}/{tile}/extracted/mosaico_*.tif
+├── SPOT/SPOT_SEMA/{municipio}/{tile}/extracted/mosaico_*.tif
+└── NDVI/{path_row}/{ano}/..._{NDVI|RGB}_<job>.tif
 ```
 
 ## Camadas por categoria (workspace `cbers`)
@@ -39,6 +40,7 @@
 | CBERS-4A WPM | `213_129_2026_cbers_4a_wpm_...` | INPE, HD |
 | Landsat | `landsat_224_069_2023_l9_...` | USGS, HD |
 | SPOT SEMA | `spot_sema_canarana_...`, mosaicos por município | SEMA-MT, HD |
+| NDVI | `ndvi_<path>_<row>_<ano>_...` (Float32 + RGB) | Landsat C2 L2, gerado sob demanda |
 | SIMCAR Digital | `car_digital_simcar_d_simcar_d_*` (APP, ARL, AUAS, rios, tipologia vegetal, ...) | sync mensal, SSD |
 | Fiscalização | `fiscalizacao_autos_de_infracao*`, `fiscalizacao_areas_embargadas_sema` | sync mensal, SSD |
 | Grades | `GRADE_CBERS4`, `GRADE_CBERS_4A_WPM`, `GRADE_LANDSAT` | — |
@@ -50,7 +52,8 @@ Hierarquia principal:
 ```
 RASTER
 ├── CBERS-4A-Apos_2019 → orbit_{X}_{Y} → orbit_{X}_{Y}_y{AAAA} → layer
-└── LANDSAT → landsat_orbit_{X}_{Y} → landsat_orbit_{X}_{Y}_y{AAAA} → layer
+├── LANDSAT → landsat_orbit_{X}_{Y} → landsat_orbit_{X}_{Y}_y{AAAA} → layer
+└── NDVI → ndvi_orbit_{X}_{Y} → ndvi_orbit_{X}_{Y}_y{AAAA} → layer
 VETOR
 ├── SIMCAR_DIGITAL
 ├── FISCALIZACAO
