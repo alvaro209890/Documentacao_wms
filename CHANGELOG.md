@@ -2,6 +2,41 @@
 
 Registro de operações e mudanças no serviço WMS.
 
+## 2026-09-28 — Auditoria read-only do catálogo `cbers` (sem alteração) *(autor: Hermes-server/wms)*
+
+Nada foi alterado no GeoServer, proxy, túnel ou dados. Medido direto dos XML do data dir,
+dos 3 GetCapabilities e de GetMap reais:
+
+| Item | Resultado |
+|---|---|
+| Camadas | **813** (750 raster + 63 vetor), 700 layergroups (159 NAMED, 541 CONTAINER) |
+| Stores com arquivo ausente | **0** (528 WorldImage, 215 GeoTIFF, 7 ImageMosaic, 63 Shapefile) |
+| Camada sem estilo / SLD ausente | **0** (185 estilos) |
+| Raster não-Byte sem `_fixo` | **1**: `213_129_2025_cbers_4a_wpm_20250813_213_129_l4_c342_pan` (Int16) |
+| GetCapabilities 1.3.0 | XML válido: local 3,9 s · proxy 4,1 s · público 1,5 s; 972 `<Layer>` com nome |
+| GetMap (1.3.0, EPSG:4674, bbox lat,lon) | **20/20 PNG com dado**, local e público (CBERS, Landsat, NDVI, SPOT, mosaico, SIMCAR, Fiscalização, Base) |
+| Tamanho | SSD 101 MB (config+logs) · vetores no HD 20 GB · rasters dos stores 446 GiB |
+
+Achados:
+- 🔴 **`AREAS_USO_RESTRITO` não renderiza** (falha silenciosa): o shapefile do store
+  `base_referencia` está em `SIRGAS_2000_Lambert_Conformal_Conic_MT` (metros), mas a camada declara
+  `EPSG:4674` com `projectionPolicy=FORCE_DECLARED`. Os metros são lidos como graus, o
+  `latLonBoundingBox` ficou `-180,-90,180,90`, e o GetMap de MT volta PNG 100% transparente com
+  HTTP 200. É a única das 63 camadas vetoriais assim. Correção sugerida (não aplicada):
+  `REPROJECT_TO_DECLARED` + recalcular bbox, ou reprojetar o shapefile para EPSG:4674.
+- Os **347 symlinks quebrados** de `data_dir/external/cbers/` **não são usados por nenhum store**:
+  os 11 stores que apontam para `external/` resolvem. Não há impacto em render (corrige a nota de
+  01/08). `/media/server/HD Backup1` hoje é symlink para `HD Backup`, mas os arquivos estão em
+  `RASTER/CBERS_4A/...`, por isso o alvo continua não existindo.
+- O proxy mostra só as árvores RASTER/VETOR: `AREAS_USO_RESTRITO`, a cena
+  `211_129_2022_cbers_4a_wpm_20220803_211_129_c342` e o grupo `orbit_211_129_y2022` estão na raiz
+  e **não aparecem no capabilities público** (continuam respondendo por GetMap).
+- `car_digital_simcar_d_simcar_d_app` na extensão de MT leva ~31 s local (zoom de imóvel é rápido).
+- WFS público lista 64 FeatureTypes (os vetores), não todas as camadas.
+
+Pendências (decisão do Álvaro, nada feito): CRS de `AREAS_USO_RESTRITO`; `_fixo` da cena Int16 acima; incluir os 3 nomes da raiz
+nas árvores; limpar os 347 links órfãos.
+
 ## 2026-09-02 — WMS lento / espiral de restarts do túnel *(autor: Claude)*
 
 **Sintoma:** WMS "lento", healthcheck em loop de falha desde 13:28 (45 restarts do túnel no dia).

@@ -56,7 +56,7 @@ python3 scripts/gerar_estilos_fixos.py --plano /tmp/plano.json --reverter
 | Problema | Sintoma | Ação |
 |---|---|---|
 | Capabilities lento (4–6s) | Latência alta em todos os testes | Normal: healthcheck a cada 2min + XML gigante (737 camadas). Monitorar, não corrigir às cegas |
-| Camada CBERS 2026 não renderiza | GetMap → XML `ServiceException` ou PNG vazio | Provável symlink quebrado em `data_dir/external/cbers/` apontando para `/media/server/HD Backup1/...` — corrigir store para apontar direto ao HD (`RASTER/CBERS_4A/...`) |
+| Camada CBERS 2026 não renderiza | GetMap → XML `ServiceException` ou PNG vazio | Conferir se o `<url>` do `coveragestore.xml` resolve (`test -e`). Em 2026-09-28 os 11 stores em `data_dir/external/cbers/` resolviam; os 347 links quebrados ali são órfãos (sem store). Se um store novo cair num link quebrado, apontar direto ao HD (`RASTER/CBERS_4A/...`) |
 | Vetores SIMCAR desatualizados | Shapes antigos | Rodar `systemctl --user start car-digital-sync.service` (ou esperar o timer do dia 01) |
 | Sync SIMCAR não confirma dado novo | Zips de um mês com mesmo tamanho do anterior (ex.: `veredas` 111.578.555 B em jul/ago/2026) | Provável: dado-fonte do CAR Digital não mudou. O script não compara por hash — comparar checksum de um zip entre os 2 meses se precisar confirmar. Sync em si está OK (auditoria 2026-08-02) |
 | Camada com cor diferente entre recortes | Mesma área sai com matiz diferente conforme o zoom/extensão | Camada não-Byte sem estilo `_fixo`. Rodar `scripts/gerar_estilos_fixos.py` (ver acima) |

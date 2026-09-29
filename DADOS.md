@@ -89,6 +89,7 @@ não-finitos e a borda preta. Faixa típica: Landsat 5 UInt16 ~11.500–21.000; 
 
 - **SPOT SEMA (reativado 2026-08-01)**: 528 tiles no HD (`SPOT_SEMA_OTIMIZADO`, com overviews) servem as 536 camadas spot — 528 stores de cena + 7 mosaicos por município + `SPOT_MALHA_25`. Todos os mosaicos renderizam (1.7–42s no 1º acesso, ~0.2s repetido). Detalhes em `CHANGELOG.md`.
 - **8 camadas CBERS 2026 usam symlinks** em `data_dir/external/cbers/` (criados pelo pipeline de publicação do GeoForest). Em 2026-08-01, **347 de 362 symlinks estavam quebrados** (apontando para `/media/server/HD Backup1/...` inexistente) — render dessas camadas pode falhar; o healthcheck não detecta (só testa GetCapabilities).
+  **Atualização 2026-09-28:** os 347 links quebrados são **órfãos** — nenhum store os referencia; os 11 stores que usam `external/` resolvem e renderizam. Hoje o catálogo tem 813 camadas e 700 layergroups (ver `CHANGELOG.md`).
 - **Limpeza feita em 2026-08-01**: apagados 85 resíduos `.geotiff` (~1MB, sem referência em nenhum store) e `data/spot_sema_mosaics` (220KB, órfão) do SSD.
 - `geoserver_data/raster_images/` e `geoserver_data/hd_externo/` estão vazios — estrutura antiga.
 - Deslocamento conhecido de imagens CBERS: causa raiz histórica = comparar bbox-center com cena L4 de outra data + zona UTM hardcoded. Publicar com georref nativo.
