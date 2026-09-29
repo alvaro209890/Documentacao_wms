@@ -2,6 +2,21 @@
 
 Registro de operações e mudanças no serviço WMS.
 
+## 2026-09-29 — Regeneração da cena Int16 20250813 213/129 PAN em staging (sem alteração) *(autor: Hermes-server/wms)*
+
+Nada alterado em produção (GeoServer, proxy, túnel e arquivo original de 7,6 GB intactos, healthcheck 200). Detalhe em [INT16_REGENERACAO_2026-09-29.md](INT16_REGENERACAO_2026-09-29.md).
+
+| Item | Resultado |
+|---|---|
+| Origem | Bandas oficiais baixadas do INPE BDC (BAND0 PAN 2m, BAND2/3/4 MS 8m) |
+| Regeneração | ArcGIS 10.8 Esri CreatePansharpenedRasterDataset (pesos 0.166/0.167/0.167/0.5, Int16, LZW) |
+| Arquivo candidato | 8.502.674.505 B (vs 7.626.696.695 B truncado em produção) — dados íntegros recuperados |
+| Validação Norte | 100,0% idêntico à porção legível de produção (75 blocos, 3,6M px, dif_media = 0.0) |
+| Validação Sul | 418 blocos na faixa crítica y < 8.559.036 lidos sem erro (0 falhas de descompressão LZW) |
+| Integridade | `gdalinfo -checksum` 197.989 blocos nas 3 bandas sem erros (B1=21328, B2=64019, B3=3543) |
+| `checar_tiff_truncado.py` | 0 truncamentos, 0 erros |
+| Scripts operacionais | `aplicar.sh` e `voltar.sh` prontos com backup atômico, trava de segurança e auto-reversão |
+
 ## 2026-09-29 — Raster Byte × Int16 medido em staging + User-Agent no log do proxy preparado (sem alteração) *(autor: Hermes-server/wms)*
 
 Nada alterado em produção (sha256 do proxy igual, sem restart, GetCapabilities 8081/8082/público

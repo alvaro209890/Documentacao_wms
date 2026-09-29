@@ -5,6 +5,8 @@ arquivo. Fim alem do arquivo = TIFF truncado (render falha nessa regiao).
 
 Le so o cabecalho/IFD (GDAL metadata BLOCK_OFFSET_*), nao os pixels (~1 min p/ 743 tifs).
 Uso (no servidor): /usr/bin/python3 checar_tiff_truncado.py [saida.json]   (padrao /tmp/truncados.json)
+       arquivo avulso: /usr/bin/python3 checar_tiff_truncado.py --arquivo <a.tif> [b.tif ...]
+                       (saida em /tmp/truncados_arquivo.json)
 Achado de 29/09/2026: 1 truncado (213_129 20250813 L4 C342 PAN), 5 sem overview.
 """
 from __future__ import annotations
@@ -26,7 +28,12 @@ WS = "/home/server/geoserver_data/workspaces/cbers"
 
 def main() -> int:
     alvos = {}
-    for cs in glob.glob(os.path.join(WS, "*", "coveragestore.xml")):
+    # --arquivo <tif> [...]: checa so os arquivos dados (ex.: copia em staging), sem varrer o workspace
+    if len(sys.argv) > 2 and sys.argv[1] == "--arquivo":
+        for p in sys.argv[2:]:
+            alvos[os.path.abspath(p)] = os.path.basename(p)
+        sys.argv = sys.argv[:1] + ["/tmp/truncados_arquivo.json"]
+    for cs in ([] if alvos else glob.glob(os.path.join(WS, "*", "coveragestore.xml"))):
         txt = open(cs, encoding="utf-8").read()
         m = re.search(r"<url>([^<]+)</url>", txt)
         if not m:
