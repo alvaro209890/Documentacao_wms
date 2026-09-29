@@ -2,6 +2,21 @@
 
 Registro de operações e mudanças no serviço WMS.
 
+## 2026-09-29 — Raster Byte × Int16 medido em staging + User-Agent no log do proxy preparado (sem alteração) *(autor: Hermes-server/wms)*
+
+Nada alterado em produção (sha256 do proxy igual, sem restart, GetCapabilities 8081/8082/público
+200 antes e depois, GetMap público da camada com 100% de dado). Detalhe em
+[BYTE_E_USER_AGENT_2026-09-29.md](BYTE_E_USER_AGENT_2026-09-29.md).
+
+| Item | Resultado |
+|---|---|
+| Camada | `landsat_224_069_2005_lt05_224069_20051016` (Int16, a mais pedida), cópia Byte com o `_fixo` gravado, só em GeoServer de teste |
+| Byte | −17/−18% no GetMap real do ArcMap (1,24 → 1,01 s), cor igual (máx. 1 nível) |
+| 🟠 Reprojeção | a cena está em EPSG:32622 e o ArcMap pede 31982: georreferenciamento em 31982 = −35/−39%; com Byte = −52/−53% |
+| User-Agent | patch de 1 função no `log_message`, testado em proxy de teste; não aplicado |
+
+Scripts novos: `scripts/gerar_copia_byte.py`, `scripts/bench_byte_vs_int16.py`.
+
 ## 2026-09-29 — Correção de CRS do `AREAS_USO_RESTRITO` preparada em staging + cena Int16 truncada (sem alteração) *(autor: Hermes-server/wms)*
 
 Nada alterado em produção (shapefile com sha256 igual, `featuretype.xml` ainda `FORCE_DECLARED`,
