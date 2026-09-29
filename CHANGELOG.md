@@ -2,6 +2,24 @@
 
 Registro de operações e mudanças no serviço WMS.
 
+## 2026-09-29 — Correção de CRS do `AREAS_USO_RESTRITO` preparada em staging + cena Int16 truncada (sem alteração) *(autor: Hermes-server/wms)*
+
+Nada alterado em produção (shapefile com sha256 igual, `featuretype.xml` ainda `FORCE_DECLARED`,
+capabilities local e público 200). Tudo preparado fora do data dir, para decisão do Álvaro.
+
+| Item | Resultado |
+|---|---|
+| `AREAS_USO_RESTRITO` | cópia reprojetada para EPSG:4674 (ogr2ogr): extent `-60.57,-17.90 → -50.21,-9.83`, 3 feições válidas, pontos internos em Poconé / Pontes e Lacerda / Ribeirão Cascalheira |
+| Prova em GeoServer de teste (2.28.3, loopback, data dir próprio) | bug reproduzido (0% opaco) → correção → **7,99% opaco** → reversão → igual ao backup. Testado nos 2 modos: `REPROJECT_TO_DECLARED` (recomendado, sem tocar arquivo) e troca do shapefile |
+| Sync mensal | não toca o store `base_referencia` (só apaga/recria o prefixo `base_referencia_`): a correção sobrevive ao dia 01 |
+| 🔴 Cena Int16 `213_129_2025_cbers_4a_wpm_20250813_213_129_l4_c342_pan` | **`.tif` truncado**: faltam 17,7 MB, 38.260/197.989 tiles ilegíveis (20% sul da cena), sem overviews. GetMap nessa região → `ServiceException` com HTTP 200, e **quebra também o grupo `orbit_213_129_y2025`** ali. É o motivo de o `gerar_estilos_fixos.py` ter pulado a camada |
+| Varredura dos 743 GeoTIFF dos stores (só cabeçalho) | esse é o **único truncado**; 5 sem overview. Script: `scripts/checar_tiff_truncado.py` |
+| 3 nomes fora do capabilities público | proposta: `AREAS_USO_RESTRITO` direto em `VETOR` (nunca em `BASE_DE_REFERENCIA`, que o sync regrava), só depois do CRS; `orbit_211_129_y2022` dentro de `orbit_211_129` |
+
+Pendências (decisão do Álvaro): aplicar a correção de CRS; baixar de novo a cena CBERS-4A WPM
+2025-08-13 213/129 L4 PAN (ou tirá-la do grupo até lá); `_fixo` dela (SLD já gerado); os 3 nomes
+nas árvores. Atributo `NOME` de `AREAS_USO_RESTRITO` tem acento com UTF-8 duplo já na origem.
+
 ## 2026-09-29 — Linha de base de desempenho GetMap/GetCapabilities (sem alteração) *(autor: Hermes-server/wms)*
 
 Só medição, nada alterado. 15 camadas mais pedidas no proxy (journal 09/08→29/09), GetMap real
