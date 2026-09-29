@@ -2,6 +2,22 @@
 
 Registro de operações e mudanças no serviço WMS.
 
+## 2026-09-29 — Linha de base de desempenho GetMap/GetCapabilities (sem alteração) *(autor: Hermes-server/wms)*
+
+Só medição, nada alterado. 15 camadas mais pedidas no proxy (journal 09/08→29/09), GetMap real
+de cada uma, 3 amostras em 8081, 8082 e público, com checagem de pixel com dado.
+
+| Item | Resultado |
+|---|---|
+| GetMap público | 0,17–1,37 s (mediana ~1 s); nenhuma camada lenta, nenhuma imagem vazia |
+| Túnel | +0,16 s de mediana sobre o proxy |
+| GetCapabilities | 8081 3,8 s · 8082 0,01 s (cache do proxy) · público 0,5 s |
+| Pirâmide | Todas as GeoTIFF com overviews; mosaico SPOT com tiles com overview |
+| Cache de GetMap | Nenhum: GWC vazio (12 KB) e Cloudflare `DYNAMIC` |
+| Pior caso | `spot_sema_querencia_mosaic` extensão inteira: 8,2 s frio / 0,96 s quente |
+
+Detalhe e causas prováveis em `DESEMPENHO_2026-09-29.md`; script em `scripts/bench_wms_getmap.py`.
+
 ## 2026-09-28 — Auditoria read-only do catálogo `cbers` (sem alteração) *(autor: Hermes-server/wms)*
 
 Nada foi alterado no GeoServer, proxy, túnel ou dados. Medido direto dos XML do data dir,
