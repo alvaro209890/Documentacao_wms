@@ -2,6 +2,26 @@
 
 Registro de operações e mudanças no serviço WMS.
 
+## 2026-10-03 — Cena Int16 20250813 213/129 PAN: ganho medido, ciclo publicar↔voltar ensaiado, doc (sem alteração em produção) *(autor: Hermes-server/wms)*
+
+🔴 **Produção não foi alterada.** Arquivo original intacto (`sha 0db328a9…`, 7.626.696.695 B,
+sem `.ovr`), três serviços `active`, WMS público 200. A publicação é decisão do Álvaro.
+Detalhe em [INT16_PUBLICACAO_2026-10-03.md](INT16_PUBLICACAO_2026-10-03.md).
+
+| Item | Resultado |
+|---|---|
+| Shas conferidos hoje | `.tif` `f12dc7bc…` e `.ovr` `59367e7e…` batem com o `SHA256SUMS` |
+| Ganho principal | cena inteira: **90,87 s + erro → 0,18 s + PNG 68,30% com dado** (≈505×) |
+| Ganho vem do `.ovr` | o **mesmo** `.tif` íntegro **sem** overview levou 162,69 s — publicar só o `.tif` seria **pior que hoje** |
+| Sul da cena | arquivo truncado: **319 blocos de grade com erro de leitura** (toda a metade sul); candidato: **0 erro** |
+| Grupo `orbit_213_129_y2025` | hoje devolve `ServiceException` no sul e PNG 0,00% mais abaixo — **falha silenciosa** |
+| Ensaio aplicar→voltar | aplicar **exit 0** (norte+sul PNG 100%), voltar **exit 0** (sha `0db328a9…`, `.ovr` removido, estado idêntico ao inicial) |
+| 🔴 Bug corrigido 1 | `BBOX_SUL` do `comum.sh` caía **fora da borda da órbita** → dava 0% mesmo no candidato íntegro → o `aplicar.sh` reverteria sozinho |
+| 🔴 Bug corrigido 2 | `reset` REST e GetMap usavam nome de camada/store fixo → 404 e `LayerNotDefined` no GeoServer de teste; agora `CAMADA`/`STORE` por ambiente |
+| Tempo real | `aplicar.sh` ~25 min · `voltar.sh` ~13 min · ciclo ~40 min · ~10,8 GB livres no HD |
+| Pendência | a camada segue **sem** o estilo `_fixo`; rodar `gerar_estilos_fixos.py` depois de publicar |
+| ⚠️ Espaço | o ensaio leva ~26 GB: no SSD o disco foi a **97%**. Rodar no HD, nunca no `/` |
+
 ## 2026-09-29 — Regeneração da cena Int16 20250813 213/129 PAN em staging (sem alteração) *(autor: Hermes-server/wms)*
 
 Nada alterado em produção (GeoServer, proxy, túnel e arquivo original de 7,6 GB intactos, healthcheck 200). Detalhe em [INT16_REGENERACAO_2026-09-29.md](INT16_REGENERACAO_2026-09-29.md).
