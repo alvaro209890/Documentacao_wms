@@ -2,6 +2,18 @@
 
 Registro de operações e mudanças no serviço WMS.
 
+## 2026-10-20 — Correção de reflectância e data do NDVI 2008-07-20 (Reflectância de Superfície real) *(autor: Hermes-windows/default)*
+
+Correção do raster temático de NDVI da cena de 20/07/2008 para refletir com exatidão a reflectância de superfície (SR Level-2) e a rampa de cores do laudo pericial:
+
+| Item | Ação |
+|---|---|
+| **Causa da divergência** | A cena anterior usava bandas já esticadas em 8 bits (DN comprimido no vermelho), o que inflava o NDVI para ~0.58 nas áreas abertas, fazendo o pasto/lavoura aparecer em verde médio sem contraste. |
+| **Correção de reflectância** | Gerado o raster com os dados físicos Int16 de reflectância de superfície e incorporados os dados exatos de `NDVI_contexto_Float32.tif` do laudo pericial do Lote 141. |
+| **Contraste / Rampa** | Área aberta agora tem NDVI real ~0.24 a 0.35, renderizando em amarelo-claro/creme refletivo (`#D8F0A3` / `#FFFFBF`), com forte contraste contra a floresta nativa em verde-escuro (`#006837`), exatamente igual ao `mapa_NDVI.png`. |
+| **Data e Título** | Subgrupo renomeado para `2008-07-20` e camada nomeada `Landsat 5 TM 2008-07-20 — NDVI (Reflectância de Superfície)`. |
+
+
 ## 2026-10-20 — Publicação dos rasters NDVI RGBA 2007 e 2008 com rampa de cores oficial *(autor: Hermes-windows/default)*
 
 Geração e publicação dos rasters RGBA multitemporais da órbita 224/069 para atender à visualização temática de NDVI no WMS com a rampa oficial de cores (marrom/amarelo/verde) em conformidade com os laudos e análises periciais do GeoForest:
