@@ -2,6 +2,19 @@
 
 Registro de operações e mudanças no serviço WMS.
 
+## 2026-10-20 — Padronização da hierarquia NDVI 224_069: limpeza de 2007 e adição de 2008 *(autor: Hermes-windows/default)*
+
+Atendimento à solicitação de limpeza das camadas derivadas de teste do Landsat 7 no grupo NDVI da órbita 224/069 e consolidação das cenas orbitais reais utilizadas nas análises multitemporais da IMAP.
+
+| Item | Ação |
+|---|---|
+| **Grupo `ndvi_orbit_224_069_y2007`** | Removidas as 5 camadas individuais/derivadas de Landsat 7 (`NDFI`, `NDVI`, `RGB`, `SAVI`, `SWIR`). Inserida exclusivamente a cena real Landsat 5 TM de 15/05/2007 com composição 543 e estilo fixo (`cbers:landsat_224_069_2007_lc_5_224_069_20070515_comp543`). |
+| **Grupo `ndvi_orbit_224_069_y2008`** | Criado o subgrupo 2008 contendo a cena Landsat 5 TM de 20/07/2008 com composição 543 e estilo fixo (`cbers:landsat_224_069_2008_landsat_5_20080720_224_069_comp5431_geototal`). |
+| **Grupo pai `ndvi_orbit_224_069`** | Atualizado para incluir `y2007`, `y2008` e `y2005` organizados de forma limpa. |
+| **Camadas L7 20070928** | Marcadas como `advertised=false` no GeoServer para não poluir o catálogo WMS. |
+| **Validação** | GetCapabilities e GetMap testados localmente e via proxy com `HTTP 200 OK`. |
+
+
 ## 2026-10-03 — Cena Int16 20250813 213/129 PAN: ganho medido, ciclo publicar↔voltar ensaiado, doc (sem alteração em produção) *(autor: Hermes-server/wms)*
 
 🔴 **Produção não foi alterada.** Arquivo original intacto (`sha 0db328a9…`, 7.626.696.695 B,
