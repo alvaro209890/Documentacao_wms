@@ -2,6 +2,19 @@
 
 Registro de operações e mudanças no serviço WMS.
 
+## 2026-10-20 — Publicação dos rasters NDVI RGBA 2007 e 2008 com rampa de cores oficial *(autor: Hermes-windows/default)*
+
+Geração e publicação dos rasters RGBA multitemporais da órbita 224/069 para atender à visualização temática de NDVI no WMS com a rampa oficial de cores (marrom/amarelo/verde) em conformidade com os laudos e análises periciais do GeoForest:
+
+| Item | Ação |
+|---|---|
+| **Cálculo NDVI 2008** | Calculado NDVI a partir das bandas físicas NIR (B4) e RED (B3) da cena Landsat 5 TM de 20/07/2008 (`LANDSAT_5_20080720_224_069_COMP5431_GEOTOTAL`). |
+| **Colorização 2008** | Aplicada a rampa oficial `ndvi_ramp.txt` (-1.0 a 1.0) gerando o GeoTIFF RGBA de 8 bits `NDVI_224_069_20080720_L5_NDVI.TIF` (90,8 MB) com overviews. |
+| **Cálculo e Colorização 2007** | Calculado NDVI a partir das bandas da cena Landsat 5 TM de 15/05/2007 (`LC_5_224_069_20070515_COMP543`), gerando `NDVI_224_069_20070515_L5_NDVI.TIF` (96,8 MB) com a rampa oficial. |
+| **Camadas GeoServer** | Publicadas `ndvi_224_069_2008_ndvi_224_069_20080720_l5_ndvi` e `ndvi_224_069_2007_ndvi_224_069_20070515_l5_ndvi` sob o estilo neutro `raster`. |
+| **Grupos WMS** | Atualizados `ndvi_orbit_224_069_y2007` e `ndvi_orbit_224_069_y2008` contendo exclusivamente as respectivas camadas temáticas colorizadas. |
+
+
 ## 2026-10-20 — Padronização da hierarquia NDVI 224_069: limpeza de 2007 e adição de 2008 *(autor: Hermes-windows/default)*
 
 Atendimento à solicitação de limpeza das camadas derivadas de teste do Landsat 7 no grupo NDVI da órbita 224/069 e consolidação das cenas orbitais reais utilizadas nas análises multitemporais da IMAP.
