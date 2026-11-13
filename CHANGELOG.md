@@ -392,3 +392,22 @@ Acessos repetidos: 0.1–0.5s (cache OS + Cloudflare). Cenas individuais: ~0.16s
 - O deploy não cria camada vazia. Float32, RGB, stores, grupos e o GetMap surgem na primeira execução NDVI sobre um recorte real.
 
 **Pendente de evidência live:** primeira execução autenticada sobre CAR real, seguida de GetCapabilities/GetMap e conferência do laudo Word. Build/API/Hosting estão online.
+
+## 2026-11-13 — Landsat 224/070 (Fazenda Ypê, Barra do Garças/MT): cenas 2003–2009 publicadas *(autor: opencode-windows)*
+
+Geração e publicação de 7 cenas Landsat 5 TM da órbita/ponto **224/070**, folha inteira (sem recorte), para a propriedade Fazenda Ypê (180,42 ha), a pedido do Álvaro.
+
+| Item | Ação |
+|---|---|
+| **Órbita/ponto** | 224/070 (célula WRS-2 do imóvel; 224/071 cobre por sobreposição lateral). |
+| **Cenas** | 2003-07-23, 2004-06-23, 2005-06-10, 2006-05-12, 2007-05-15, 2008-07-04, 2009-08-08 — todas Landsat 5 TM, 0% de nuvem, composição falsa-cor C543. |
+| **Pipeline** | `landsat_cena.py` (espelho de `GeoForest-IA/backend/landsat/`): STAC Planetary Computer → SAS → 3 bandas → `gdalbuildvrt -separate` → `gdal_translate -ot Byte -scale 1 30000 1 255` (TILED/LZW/BIGTIFF) → `gdal_edit.py` RGB → `gdaladdo -ro -r average`. |
+| **Acervo** | GeoTIFFs em `/media/server/HD Backup/RASTER/LANDSAT/224_070/<ano>/`, ~120 MB por cena (TIF + .ovr). |
+| **Camadas** | `cbers:landsat_224_070_<ano>_lt05_l2sp_224070_<data>_02_t1_c543`, cada uma com estilo próprio `<camada>_fixo` (p2/p98 reais da cena). |
+| **Grupos** | Criados/atualizados `landsat_orbit_224_070_y2003` … `y2009`, todos dentro de `landsat_orbit_224_070` → `LANDSAT` → `RASTER`, com a camada nova e o estilo fixo na entrada do grupo. |
+| **2008 e 2009** | Os grupos já tinham uma cena antiga (`..._l2_band5_4_3`, estilo `raster`) que deixava o desenho escuro (R/G/B 88/97/76 contra 150/159/138). Os grupos ficaram **somente com a cena nova**; as camadas antigas continuam publicadas e acessíveis individualmente. |
+| **Validação** | GetMap 200/`image/png` nos 7 anos pelo grupo, R/G/B entre 142/153/134 e 158/165/148. `GetCapabilities` local lista as 7 camadas e 7 estilos. |
+| **Documento** | `LANDSAT_224_070_FAZENDA_YPE_2026-11-13.md` |
+
+**Achado que segue em aberto:** os 72 grupos `landsat_orbit_*_y*` usam o estilo `raster` (`default_raster.sld`, sem esticamento) e por isso o desenho pelo grupo sai bem mais escuro que pela camada individual (145/170/133 contra 58/50/31 em 224_069/2004). As camadas novas já entram com o fixo no grupo; as antigas não foram alteradas.
+
