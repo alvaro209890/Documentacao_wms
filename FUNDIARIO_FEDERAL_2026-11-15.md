@@ -84,6 +84,24 @@ Backup: `sync_car_digital.py.bak-20261115-antes-fundiario`.
    falhava (`GetCapabilities publico sem N camadas`) logo depois de publicar — os 4 retries de 75 s
    não adiantavam porque o TTL é de 1 h. Agora a conferência pública passa.
 
+## Estilos (obrigatórios — o estilo padrão `polygon` é inviável)
+
+O estilo `polygon` do GeoServer desenhava as 166 mil parcelas em qualquer zoom: **12 s** num
+GetMap 600×600 sobre Querência e **28 s** no estado inteiro. Foram criados dois SLDs por escala
+(arquivos em `scripts/estilos/`, aplicados com `POST /rest/workspaces/cbers/styles?name=<nome>`):
+
+| Estilo | Camada | Regras |
+|---|---|---|
+| `cbers:fundiario_sigef` | `fundiario_sigef_parcelas_mt` | 1:1,2M ou menos → contorno 0,25 px; 1:250k–1:1,2M → contorno 0,6 px; zoom ≥ 1:250k → contorno 1 px + fill 12% |
+| `cbers:fundiario_snci` | `fundiario_snci_imoveis_mt` | mesmas faixas, em azul |
+
+Depois do estilo: Querência 600×600 em **0,10 s** (era 12 s), zoom de imóvel **0,05 s**,
+SNCI estado inteiro **0,58 s**, SIGEF estado inteiro **6,5 s** (só contorno fino — é o custo de
+projetar 166 mil polígonos; some quando o cliente dá zoom).
+
+Reaplicar (se o estilo se perder): `PUT /rest/layers/cbers:<camada>.json` com
+`{"layer":{"defaultStyle":{"name":"<estilo>"},"styles":{"style":[{"name":"<estilo>"}]}}}`.
+
 ## Pitfalls
 
 1. **Não confundir com o antigo** `acervofundiario` (morto) nem com `wms.cursar.space` desatualizado:
