@@ -6,6 +6,7 @@
 |---|---|---|---|
 | Raster CBERS/Landsat/SPOT/NDVI | `/media/server/HD Backup/RASTER/` (HD 2TB) | 520GB + NDVI sob demanda | 729 existentes + 2 por job NDVI |
 | Vetores SIMCAR Digital + Fiscalização | `/media/server/HD Backup/GEOSERVER/data/cbers/` (HD 2TB, via symlink) | ~13GB | 38 (datastores apontam para `geoserver_data/data/cbers/`, resolvido por symlink) |
+| Vetores **Fundiário Federal** (SIGEF/INCRA + SNCI/SINTER, MT) | `/media/server/HD Backup/GEOSERVER/data/cbers/fundiario_*/` (GeoPackage versionado) | 133 MB (124 MB SIGEF + 9 MB SNCI) | 2 camadas no grupo `FUNDIARIO_FEDERAL` (desde 2026-11-15) |
 | Config do GeoServer | `/home/server/geoserver_data/` | — | — |
 | Stores CBERS 2026 (via symlink) | `/home/server/.local/geoserver-work/data_dir/external/cbers/` | 2.1MB (links) | 8 |
 

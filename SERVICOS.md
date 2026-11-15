@@ -17,7 +17,7 @@ Units: `/home/server/.config/systemd/user/*.service`
 | Timer | Agenda | O que faz |
 |---|---|---|
 | `geoserver-wms-healthcheck.timer` | a cada 2 min | Roda o healthcheck (abaixo) |
-| `car-digital-sync.timer` | dia 01 às 02:00 (+ retry diário até sucesso) | Sincroniza SIMCAR Digital + Fiscalização |
+| `car-digital-sync.timer` | dia 01 às 02:00 (+ retry diário até sucesso) | Sincroniza SIMCAR Digital + Fiscalização + **Fundiário Federal (SIGEF/SNCI)** |
 | `geoforest-autosync.timer` | a cada 2 min | CI/CD do GeoForest (pull → build → deploy) |
 
 ## Healthcheck — `~/.local/bin/geoserver-wms-healthcheck.sh`
@@ -35,6 +35,7 @@ Testa as 3 URLs em cascata com `curl --max-time 20`:
 - Executado por `car-digital-sync.service` (oneshot), working dir `/media/server/HD Backup/VETOR/CAR_Digital`
 - Agenda: `*-*-01 02:00:00` + retry diário `*-*-02..31 02:00:00` com `Persistent=true` (se o dia 01 falhar, tenta de novo nos dias seguintes)
 - Atualiza os 38 datastores vetoriais (SIMCAR Digital + Fiscalização) em `geoserver_data/data/cbers/` — desde 2026-08-01 esse path é **symlink** para `/media/server/HD Backup/GEOSERVER/data/cbers/` (HD); o sync continua gravando pelo mesmo path lógico, sem mudanças no script
+- **4º domínio (2026-11-15): `fundiario`** — SIGEF/INCRA (`geonode:sigef_geo`, `uf_id=51`) e SNCI/SINTER (`sinter:snci`, `uf='MT'`), publicados em GeoPackage no grupo `FUNDIARIO_FEDERAL` (dentro de `VETOR`). Config em `/media/server/HD Backup/VETOR/Fundiario_Federal/config/sources.json`; forçar só ele: `sync_car_digital.py run --domain fundiario`. Ver [FUNDIARIO_FEDERAL_2026-11-15.md](FUNDIARIO_FEDERAL_2026-11-15.md)
 - Depende de: `network-online.target` + `geoserver-wms.service`
 
 ## Comandos úteis
@@ -49,8 +50,11 @@ systemctl --user list-timers | grep -E "geo|car"
 # Logs do GeoServer
 tail -f /home/server/geoserver_data/logs/geoserver.log
 
-# Último sync SIMCAR
+# Último sync (SIMCAR + Fiscalização + Fundiário Federal)
 journalctl --user -u car-digital-sync.service --no-pager -n 30
+
+# Forçar só o fundiário (SIGEF/SNCI)
+/usr/bin/python3 ~/.local/bin/sync_car_digital.py run --domain fundiario
 
 # Rodar healthcheck manualmente
 ~/.local/bin/geoserver-wms-healthcheck.sh

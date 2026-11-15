@@ -2,6 +2,25 @@
 
 Registro de operações e mudanças no serviço WMS.
 
+## 2026-11-15 — Base fundiária federal no WMS: SIGEF (INCRA) + SNCI (SINTER), sync mensal *(autor: Hermes-aws)*
+
+Entraram duas camadas federais no grupo pai `VETOR`, num grupo novo `FUNDIARIO_FEDERAL` (modo **NAMED**):
+
+| Camada | Fonte | Feições (MT) | Formato |
+|---|---|---|---|
+| `cbers:fundiario_sigef_parcelas_mt` | WFS `https://geoportal.incra.gov.br/geoserver/wfs` · `geonode:sigef_geo` | 166.047 | GeoPackage, EPSG:4674 |
+| `cbers:fundiario_snci_imoveis_mt` | WFS `https://www.sinter.fazenda.gov.br/geoserver/wfs` · `sinter:snci` | 6.109 | GeoPackage, EPSG:4674 |
+
+- Entrou como **4º domínio** do `sync_car_digital.py`: atualiza no mesmo ciclo mensal do SIMCAR
+  (`car-digital-sync.service`, dia 01 às 02:00 + retry diário), com manifesto e relatório próprios em
+  `/media/server/HD Backup/VETOR/Fundiario_Federal/`.
+- `force_geopackage` novo no script: publica em GeoPackage mesmo abaixo de 1,9 GB para não perder
+  nome de campo longo (UUID de parcela tem 36 caracteres; DBF corta em 10).
+- **Correção de validação:** o Cloudflare serve `GetCapabilities` com `max-age=3600`; a validação
+  pública agora usa `&_ts=<epoch>` (cache-buster). Sem isso o sync "falhava" logo após publicar.
+- O WFS antigo do INCRA (`acervofundiario.incra.gov.br/i3geo/ogc.php`) **não resolve mais em DNS**.
+- Detalhes, comandos e pitfalls: [FUNDIARIO_FEDERAL_2026-11-15.md](FUNDIARIO_FEDERAL_2026-11-15.md).
+
 ## 2026-10-20 — Correção de reflectância e data do NDVI 2008-07-20 (Reflectância de Superfície real) *(autor: Hermes-windows/default)*
 
 Correção do raster temático de NDVI da cena de 20/07/2008 para refletir com exatidão a reflectância de superfície (SR Level-2) e a rampa de cores do laudo pericial:
