@@ -121,6 +121,7 @@ def parametros_wfs(camada):
 def baixar_wfs(fonte, pasta):
     params = parametros_wfs(fonte.camada) | fonte.parametros
     total = total_wfs(fonte.url, params, fonte.headers)
+    emitir(grupo=fonte.grupo, camada=fonte.nome, status="baixando", feicoes=total)
     zip_path = pasta / "origem.zip"
     with get(fonte.url, parametros=params | {"outputFormat": "SHAPE-ZIP"}, headers=fonte.headers,
              timeout=600, stream=True) as resp, zip_path.open("wb") as arq:
@@ -195,21 +196,22 @@ def identidade(arquivos):
     return digest.hexdigest()
 
 
-def validar(path, total, *, campo=None, invertido=False):
+def validar(path, total, *, campo=None, invertido=False, vazio_confirmado=False):
     ds = ogr.Open(str(path), 0)
     layer = ds.GetLayer(0) if ds else None
     if layer is None:
         raise Falha("GDAL não abriu a camada")
     count = layer.GetFeatureCount()
-    if count != total or count <= 0:
-        raise Falha(f"contagem divergente: origem {total}, arquivo {count}")
+    if count != total or (count == 0 and not vazio_confirmado):
+        raise Falha(f"contagem divergente ou vazia: origem {total}, arquivo {count}")
     if layer.GetSpatialRef() is None:
         raise Falha("CRS ausente")
-    x0, x1, y0, y1 = layer.GetExtent()
-    if invertido:
-        x0, x1, y0, y1 = y0, y1, x0, x1
-    if not (-75 <= x0 < x1 <= -30 and -35 <= y0 < y1 <= 7):
-        raise Falha("extensão fora das coordenadas esperadas")
+    if count:
+        x0, x1, y0, y1 = layer.GetExtent()
+        if invertido:
+            x0, x1, y0, y1 = y0, y1, x0, x1
+        if not (-75 <= x0 < x1 <= -30 and -35 <= y0 < y1 <= 7):
+            raise Falha("extensão fora das coordenadas esperadas")
     if campo and layer.GetLayerDefn().GetFieldIndex(campo) < 0:
         raise Falha(f"campo {campo} ausente")
 
@@ -231,6 +233,7 @@ def preparar(fonte, pasta, store, legado, reuso):
     objeto = pasta / "objeto"
     objeto.mkdir()
     invertido = fonte.grupo == "fundiario"
+    vazio_confirmado = False
     if fonte.tipo == "pamgia":
         original, total = baixar_pamgia(fonte, pasta)
         digest = identidade([original])
@@ -240,14 +243,20 @@ def preparar(fonte, pasta, store, legado, reuso):
             total = int(zip_path.with_suffix(".count").read_text())
         else:
             zip_path, total = baixar_wfs(fonte, pasta)
+        if total == 0 and store is not None:
+            vazio_confirmado = total_wfs(
+                f"{WMS}/{WORKSPACE}/wfs", parametros_wfs(f"{WORKSPACE}:{fonte.nome}"), UA
+            ) == 0
         original = desempacotar(zip_path, objeto, fonte.nome)
         digest = identidade(objeto.iterdir())
-        validar(original, total, campo="NUMERO" if fonte.grupo == "car" else None, invertido=invertido)
+        validar(original, total, campo="NUMERO" if fonte.grupo == "car" else None,
+                invertido=invertido, vazio_confirmado=vazio_confirmado)
     gpkg = store is None or store.get("type", "").lower() == "geopackage"
     if gpkg:
         target = objeto / (fonte.nome + ".gpkg")
         converter(original, target, fonte.nome, legado.zip_charset(zip_path) if fonte.tipo == "wfs" else None)
-        validar(target, total, campo="NUMERO" if fonte.grupo == "car" else None, invertido=invertido)
+        validar(target, total, campo="NUMERO" if fonte.grupo == "car" else None,
+                invertido=invertido, vazio_confirmado=vazio_confirmado)
         for path in objeto.iterdir():
             if path != target:
                 path.unlink()

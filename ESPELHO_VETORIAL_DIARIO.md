@@ -10,7 +10,7 @@ O timer `car-digital-sync.timer` dispara às 02h no server, em horário de Bras�
 | Fundiário | SIGEF do INCRA e SNCI do SINTER, filtrados para Mato Grosso |
 | PAMGIA | IBAMA e ICMBio no entorno de Mato Grosso |
 
-Cada camada é baixada para uma pasta temporária no HD. A contagem é confrontada com o WFS ou com os identificadores do PAMGIA. O GDAL confere o arquivo, o CRS e a extensão. Para camadas publicadas, o script troca o caminho do datastore existente, preserva estilos e nomes, e confirma a contagem pelo WFS local. Se a confirmação falhar, restaura o caminho anterior. As novas ATPs e bases do PAMGIA ficam no HD, com leitura local pelo Optimus Geo. A publicação pública do GeoServer usa os mesmos datastores já existentes.
+Cada camada é baixada para uma pasta temporária no HD. A contagem é confrontada com o WFS ou com os identificadores do PAMGIA. O GDAL confere o arquivo, o CRS e a extensão. Uma camada com zero feições só passa se o WFS de origem e o publicado já confirmarem zero. Para camadas publicadas, o script troca o caminho do datastore existente, preserva estilos e nomes, e confirma a contagem pelo WFS local. Se a confirmação falhar, restaura o caminho anterior. As novas ATPs e bases do PAMGIA ficam no HD, com leitura local pelo Optimus Geo. A publicação pública do GeoServer usa os mesmos datastores já existentes.
 
 O `estado.json` de cada camada aponta as três versões válidas mais recentes. O mesmo arquivo é compartilhado quando o conteúdo das versões coincide. A remoção roda após gravar a nova versão e só alcança diretórios geridos pelo espelho que perderam todas as referências. Os arquivos históricos da rotina mensal anterior foram preservados. Os mosaicos raster continuam no fluxo próprio.
 
