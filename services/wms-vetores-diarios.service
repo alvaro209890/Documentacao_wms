@@ -1,0 +1,10 @@
+[Unit]
+Description=Atualiza versões vetoriais compartilhadas do WMS e Optimus Geo
+Wants=network-online.target geoserver-wms.service
+After=network-online.target geoserver-wms.service
+ConditionPathIsMountPoint=/media/server/HD Backup
+
+[Service]
+Type=oneshot
+ExecStart=/usr/bin/python3 "%h/Documentação_wms/scripts/sync_vetores_diario.py"
+TimeoutStartSec=8h

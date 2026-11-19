@@ -30,3 +30,5 @@ Documentação do serviço **GeoServer WMS** rodando no PC `server-desktop` do �
 - **Principal integração:** GeoForest-IA publica camadas CBERS/Landsat via REST local e consome o WMS público para análise de imagens
 
 *Documentado em 2026-08-01. Operações registradas em [CHANGELOG.md](CHANGELOG.md).*
+
+- [Espelho vetorial diário do WMS e Optimus Geo](ESPELHO_VETORIAL_DIARIO.md)
