@@ -30,3 +30,9 @@ python3 scripts/sync_vetores_diario.py --grupo car
 ```
 
 As definições de systemd estão em `services/`. Para suspender novas atualizações, pause o timer. Para voltar à agenda mensal anterior, remova apenas o drop-in `zz-espelho-diario.conf` e recarregue o systemd. Mantenha o espelho no HD enquanto um datastore apontar para ele.
+
+## Verificação da implantação em 19/11/2026
+
+- As duas ATPs da SEMA ficaram disponíveis com 53.272 feições analisadas e 125.394 em análise. O SIGEF publicou 166.465 feições e respondeu por WFS e GetMap do GeoServer. Confirmamos sete camadas de fiscalização, duas do PAMGIA de MT e duas camadas do SIMCAR Digital, com a primeira carga ainda em execução.
+- O SINTER excedeu o prazo. O SNCI continuou no último arquivo publicado. Os consumidores já podiam usar as versões publicadas das camadas cuja atualização ainda estava em curso.
+- O WMS e o Optimus Geo continuaram ativos. Os testes de retenção confirmaram a exclusão do arquivo expirado no quarto dia e a preservação de objetos reutilizados ou de versões anteriores quando a gravação de um novo estado falha.
